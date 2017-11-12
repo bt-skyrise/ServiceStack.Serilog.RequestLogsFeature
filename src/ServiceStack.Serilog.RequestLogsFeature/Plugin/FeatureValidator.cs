@@ -2,7 +2,7 @@
 
 namespace ServiceStack.Serilog.RequestLogsFeature.Plugin
 {
-    public class FeatureValidator : AbstractValidator<Feature>
+    public class FeatureValidator : AbstractValidator<SerilogRequestLogsFeature>
     {
         public FeatureValidator()
         {

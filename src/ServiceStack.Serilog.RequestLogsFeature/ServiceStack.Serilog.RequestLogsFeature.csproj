@@ -53,6 +53,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -64,6 +65,7 @@
     <Compile Include="Logging\LatestLogEntriesCollector.cs" />
     <Compile Include="Logging\LogEventFactory.cs" />
     <Compile Include="Logging\RequestLoggerOptions.cs" />
+    <Compile Include="Plugin\FeatureConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Logging\RequestLogger.cs" />
     <Compile Include="Plugin\Feature.cs" />

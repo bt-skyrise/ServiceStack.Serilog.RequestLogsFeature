@@ -41,16 +41,20 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Logging
         {
             RequestLoggerOptions loggingOptions = Options.Clone() as RequestLoggerOptions;
 
-            if (request.Items.ContainsKey(Plugin.Feature.SerilogRequestLogsLoggerKey))
+            if (request.Items.ContainsKey(Plugin.SerilogRequestLogsFeature.SerilogRequestLogsLoggerKey))
             {
-                var logger = request.Items[Plugin.Feature.SerilogRequestLogsLoggerKey] as ILogger;
 
                 var logEvent = LogEventFactory
-                    .Create(request, loggingOptions);
+                    .Create(request, requestDto, loggingOptions);
 
-                logger
-                    .ForContext<IRequestLogger>()
-                    .Write(logEvent);
+                if(logEvent != null)
+                {
+                    var logger = request.Items[Plugin.SerilogRequestLogsFeature.SerilogRequestLogsLoggerKey] as ILogger;
+
+                    logger
+                        .ForContext<IRequestLogger>()
+                        .Write(logEvent);
+                }
 
                 LatestLogEntriesCollector
                     .Log(request, requestDto, response, elapsed);

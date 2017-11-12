@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Serilog;
-using ServiceStack.FluentValidation;
-using ServiceStack.Logging.Serilog;
 using ServiceStack.Serilog.RequestLogsFeature.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Serilog.RequestLogsFeature.Plugin
 {
-    public class Feature : IPlugin
+    public class SerilogRequestLogsFeature : IPlugin
     {
         private readonly FeatureValidator Validator = new FeatureValidator();
 
@@ -19,24 +18,29 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Plugin
         public string AtRestPath { get; set; }
 
         /// <summary>
-        /// Serilog Logger instance
+        /// Request Logger instance
         /// </summary>
         public IRequestLogger RequestLogger { get; set; }
 
-        public Feature()
+        /// <summary>
+        /// Delegate used to construct custom serilog logger instance
+        /// </summary>
+        public Func<ILogger> SerilogLoggerFactory { get; set; }
+
+        public SerilogRequestLogsFeature()
         {
             AtRestPath = "/serilogrequestlogs";
         }
 
         public void Register(IAppHost appHost)
         {
-            var requestLogger = new RequestLogger();
-
             //Validator.ValidateAndThrow(this);
 
             appHost.GlobalRequestFiltersAsync.Add(RequestFilter);
             appHost.GlobalResponseFilters.Add(ResponseFilter);
-
+            
+            var requestLogger = new RequestLogger();
+            requestLogger = new FeatureConfig().ApplyAppSettings(requestLogger, appHost);
             appHost.Register<IRequestLogger>(requestLogger);
 
             appHost.RegisterService<FeatureService>(AtRestPath);
@@ -57,12 +61,15 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Plugin
 
         private void ResponseFilter(IRequest request, IResponse response, object dto)
         {
-            
+            request.Items.Remove(SerilogRequestLogsLoggerKey);
         }
 
         private ILogger CreateSerilogLogger()
         {
-            return Log.Logger;
+            return SerilogLoggerFactory != null
+                ? SerilogLoggerFactory.Invoke()
+                : Log.Logger
+                ;
         }
     }
 }

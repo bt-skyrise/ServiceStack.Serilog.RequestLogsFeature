@@ -15,26 +15,55 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Logging
         private static readonly string Property_StatusCode_Key = "Status";
         private static readonly string Property_Headers_Key = "Headers";
         private static readonly string Property_Body_Key = "Body";
+        private static readonly string Property_Form_Key = "Form";
 
         private static readonly MessageTemplate LogEventMessageTemplate = 
             new MessageTemplateParser().Parse($@"HTTP {{{Property_HttpMethod_Key}}} {{{Property_Url_Key}}} responded {{{Property_StatusCode_Key}}}");
 
-        internal LogEvent Create(IRequest request, RequestLoggerOptions opt) =>
+        internal LogEvent Create(IRequest request, object dto, RequestLoggerOptions opt) =>
             new LogEvent(
                 timestamp: DateTimeOffset.Now,
                 exception: null,
                 level: LogEventLevel.Information,
                 messageTemplate: LogEventFactory.LogEventMessageTemplate,
-                properties: GetProperties(request, opt)
+                properties: GetProperties(request, dto, opt)
             );
 
-        private static IEnumerable<LogEventProperty> GetProperties(IRequest request, RequestLoggerOptions opt)
+        private static IEnumerable<LogEventProperty> GetProperties(IRequest request, object dto, RequestLoggerOptions opt)
         {
-            yield return WithHttpMethod(request);
-            yield return WithUrl(request);
-            yield return WithStatusCode(request);
-            yield return WithHeaders(request);
-            if(opt.EnableRequestBodyTracking)yield return WithRequestBody(request);
+            if(request != null)
+            {
+                yield return WithHttpMethod(request);
+                yield return WithUrl(request);
+                yield return WithStatusCode(request);
+                yield return WithHeaders(request);
+            }
+
+            Type requestDtoType = dto.GetType();
+            if(request != null 
+                && 
+                (
+                    opt.HideRequestBodyForRequestDtoTypes == null
+                    ||
+                    opt.HideRequestBodyForRequestDtoTypes.All(@type => @type != requestDtoType)
+                )
+                &&
+                opt.EnableRequestBodyTracking
+            )
+            {
+                yield return WithRequestBody(request);
+                yield return WithFormData(request);
+            }
+            
+            if(request != null
+                &&
+                request.IsErrorResponse()
+                &&
+                opt.EnableErrorTracking
+                )
+            {
+            }
+            
             yield break;
         }
 
@@ -60,5 +89,18 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Logging
 
         private static LogEventProperty WithRequestBody(IRequest request)
             => new LogEventProperty($"{Property_Body_Key}", new ScalarValue(request?.GetRawBody() ?? String.Empty));
+
+        private static LogEventProperty WithFormData(IRequest request)
+        {
+            var formDataAsLogEventProps = request
+                    .FormData
+                    .ToDictionary()
+                    .Select(dictItem => new LogEventProperty(dictItem.Key, new ScalarValue(dictItem.Value)))
+                    ;
+
+            return new LogEventProperty($"{Property_Form_Key}", new StructureValue(formDataAsLogEventProps));
+        }
+
+
     }
 }
