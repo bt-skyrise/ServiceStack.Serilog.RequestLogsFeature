@@ -62,7 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logging\LatestLogEntriesCollector.cs" />
+    <Compile Include="Logging\LogEntryPropertiesGenerator.cs" />
     <Compile Include="Logging\LogEventFactory.cs" />
     <Compile Include="Logging\RequestLoggerOptions.cs" />
     <Compile Include="Plugin\FeatureConfig.cs" />

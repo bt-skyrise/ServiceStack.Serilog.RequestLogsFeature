@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using Serilog;
+using Serilog.Events;
 using ServiceStack.Web;
 
 namespace ServiceStack.Serilog.RequestLogsFeature.Logging
 {
+
     internal class RequestLoggerOptions : ICloneable
     {
         public bool EnableSessionTracking { get; set; }
@@ -14,7 +18,8 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Logging
         public Func<IRequest, bool> SkipLogging { get; set; }
         public Type[] ExcludeRequestDtoTypes { get; set; }
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
-        
+        public LogEntryPropertiesGenerator LogEntryPropertiesGenerator { get; set; }
+
         internal RequestLoggerOptions GetCopy()
         {
             return (RequestLoggerOptions)MemberwiseClone();

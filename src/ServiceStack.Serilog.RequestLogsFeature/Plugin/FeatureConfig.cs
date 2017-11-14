@@ -17,7 +17,7 @@ namespace ServiceStack.Serilog.RequestLogsFeature.Plugin
                 return logger;
 
             var appSettings = new AppSettings();
-            logger.EnableRequestBodyTracking = appSettings.Get<bool>(EnableSessionTrackingKey);
+            logger.EnableSessionTracking = appSettings.Get<bool>(EnableSessionTrackingKey);
             logger.EnableRequestBodyTracking = appSettings.Get<bool>(EnableRequestBodyTrackingKey);
             logger.EnableResponseTracking = appSettings.Get<bool>(EnableResponseTrackingKey);
             logger.EnableErrorTracking = appSettings.Get<bool>(EnableErrorTrackingKey);
